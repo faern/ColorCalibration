@@ -173,7 +173,7 @@ C_g &= \frac{G_{expect}}{G_{actual}},\\
 C_b &= \frac{B_{expect}}{B_{actual}},\\
 \end{align}$$
 
-In order to avoid clipping (all output values are already set to their max), we need to make sure all these factors stay in the range $[0, 1]$ but keep their relationship. This means we need to scale down the two brightest channels to match the dimmest channel. Find the largest compensation factor: $C_{max} = max(C_r, C_g, C_b)$. Scale down all compensation factors with the largest value:
+In order to avoid clipping (all output values are already set to their max), we need to make sure all these factors stay in the range $[0, 1]$ but keep their relationship. We want to keep as much brightness as we can, so the brightest channel should stay at value $1.0$. Find the largest compensation factor: $C_{max} = max(C_r, C_g, C_b)$. Scale down all compensation factors with the largest value:
 
 $$\begin{align}
 C_{sr} = C_r / C_{max},\\
