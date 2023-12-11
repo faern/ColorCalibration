@@ -157,7 +157,7 @@ First you must build/obtain a [spectrometer](#spectrometer). Because you will ne
 
 ### White point calibration
 
-First define a target color point. We'll use [Illuminant D65](#illuminant-d65) as it is an industry standard for this. And we define it in RGB as $R_{expect} = 1.0, G_{expect} = 1.0, B_{expect} = 1.0$.
+First define a target color point. We'll use [Illuminant D65](#illuminant-d65) as it is an industry standard for this. And we define it in RGB as $\{R_{target} = 1.0, G_{target} = 1.0, B_{target} = 1.0\}$.
 
 Then program the LEDs to output the RGB code that I *want* to match my target color point. In this case this is full on on all channels (`rgb(255, 255, 255)`).
 
@@ -165,12 +165,12 @@ Now measure the spectrum that the LEDs output with the spectrometer and obtain a
 
 Compute the CIE XYZ values for the spectrum and then from that the CIE xyY coordinates and from that the RGB values. The Y here will be nonsensical since we only have a relative SPD. So the same holds for RGB, the absolute values for each color channel has no value, only their relationship to each other. But we only care about the chromaticity anyway, so this is fine! We call these $R_{actual}, G_{actual}, B_{actual}$. *[Open question I don't have the answer to yet: Can I just skip the CIE XYZ -> CIE xyY steps. There are color matching functions for RGB that goes directly from SPD -> RGB. Are these equally good?]*
 
-Compute compensation factors ($C_{r/g/b}$) for each color channel to make their actual output equally strong. The compensation factors above are the factors you would need to multiply your desired RGB values with before sending them to the LEDs in order to have them output something close to the chromaticity of the RGB value you expected:
+Compute compensation factors ($C_r, C_g C_b$) for each color channel to make their actual output equally strong. The compensation factors above are the factors you would need to multiply your desired RGB values with before sending them to the LEDs in order to have them output something close to the chromaticity of the RGB value you expected:
 
 $$\begin{align}
-C_r &= \frac{R_{expect}}{R_{actual}},\\
-C_g &= \frac{G_{expect}}{G_{actual}},\\
-C_b &= \frac{B_{expect}}{B_{actual}},\\
+C_r &= \frac{R_{target}}{R_{actual}},\\
+C_g &= \frac{G_{target}}{G_{actual}},\\
+C_b &= \frac{B_{target}}{B_{actual}}\\
 \end{align}$$
 
 In order to avoid clipping (all output values are already set to their max), we need to make sure all these factors stay in the range $[0, 1]$ but keep their relationship. We want to keep as much brightness as we can, so the brightest channel should stay at value $1.0$. Find the largest compensation factor: $C_{max} = max(C_r, C_g, C_b)$. Scale down all compensation factors with the largest value:
@@ -178,7 +178,7 @@ In order to avoid clipping (all output values are already set to their max), we 
 $$\begin{align}
 C_{sr} = C_r / C_{max},\\
 C_{sg} = C_g / C_{max},\\
-C_{sb} = C_b / C_{max},\\
+C_{sb} = C_b / C_{max}\\
 \end{align}$$
 
 Now add $C_{sr}, C_{sg}, C_{sb}$ to your program code and scale all your RGB values with these constants before sending the the value off to the LEDs. Now they should be white point calibrated. Meaning that when you try to emit white, it should actually be pretty close to a the light from the sun on a clear day at noon.
@@ -190,7 +190,7 @@ You measure a relative SPD that gives you the RGB values:
 $$\begin{align}
 R_{actual} &= 0.9,\\
 G_{actual} &= 0.8,\\
-B_{actual} &= 0.7,
+B_{actual} &= 0.7
 \end{align}$$
 
 We get the compensation factors:
@@ -198,7 +198,7 @@ We get the compensation factors:
 $$\begin{align}
 C_r &= 1.0/0.9 = 1.111...,\\
 C_g &= 1.0/0.8 = 1.25,\\
-C_b &= 1.0/0.7 = 1.429...,\\
+C_b &= 1.0/0.7 = 1.429...\\
 \end{align}$$
 
 And we scale them:
@@ -207,7 +207,7 @@ $$\begin{align}
 C_{max} &= max(C_r, C_g, C_b) = 1.429...,\\
 C_{sr} &= C_r / C_{max} = 0.778...,\\
 C_{sg} &= C_g / C_{max} = 0.875,\\
-C_{sb} &= C_b / C_{max} = 1.0,\\
+C_{sb} &= C_b / C_{max} = 1.0\\
 \end{align}$$
 
 So to whitepoint calibrate your RGB values is software before sending them to the actual LED you need to multiply the red channel value with 0.778 and the green channel value with 0.876.
