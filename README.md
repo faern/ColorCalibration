@@ -214,9 +214,61 @@ So to whitepoint calibrate your RGB values is software before sending them to th
 
 ### Color gamut calibration
 
-To be written
+Color gamut calibration in short consists of:
+  * Carry out white point calibration - This sets sample luminaire to a good default state.
+  * Measure and calibrate each primary color in the gamut (red, green and blue).
 
+Color gamut calibration is very similar to white point calibration. But instead of defining a white target somewhere in the middle of the gamut and computing compensation factors for moving the output value towards that target, we define targets for all three corners of the gamut (red, green and blue), measure our corresponding three primary LED channels and compute a matrix $M$ such that when multiplying an input RGB vector to it, the output is an RGB vector that is color calibrated for this particular LED and gamut triangle.
 
+$$\begin{align}
+RGB_{target} = [M] * RGB_{actual}
+\end{align}$$
+
+In this formula $RGB_{input}$ is the RGB color you *want* to have and $RGB_{output}$ is the RGB color code you actually write to the LEDs. With a correctly computed $M$ the color emitted from the LEDs should be very similar to the color defined in $RGB_{input}$
+
+Start by defining the three target color values to calibrate towards. Each corner of the gamut triangle. Since we work in the RGB color space, and our LEDs have the same primary colors, these values are simply the max saturated values on each channel:
+
+$$
+\{R_{target_r} = 1.0, B_{target_r} = 0.0, G_{target_r} = 0.0\}, \\
+\{R_{target_b} = 0.0, B_{target_b} = 1.0, G_{target_b} = 0.0\}, \\
+\{R_{target_g} = 0.0, B_{target_g} = 0.0, G_{target_g} = 1.0\}
+$$
+
+*[Open question: Should the above targets be white point adjusted first? Meaning that $R_{target_r} = C_{sr}$ etc, instead of just $1.0$ or $0.0$]*
+
+Measure the spectrum of each LED channel fully turned on and the other two turned off. This gives you three spectrums and as a result three RGB vectors. We name these nine values:
+
+$$\begin{align}
+\{R_{actual_r}, B_{actual_r}, G_{actual_r}\},\\
+\{R_{actual_b}, B_{actual_b}, G_{actual_b}\},\\
+\{R_{actual_g}, B_{actual_g}, G_{actual_g}\}
+\end{align}$$
+
+With the formula above, if you expand the matrix multiplication, you now have an equation system with nine formulas and nine variables. The equation system is *completely specified*:
+
+$$\begin{align}
+R_{target_r} &= M_{11}R_{actual_r} + M_{12}G_{actual_r} + M_{13}B_{actual_r},\\
+G_{target_r} &= M_{21}R_{actual_r} + M_{22}G_{actual_r} + M_{23}B_{actual_r},\\
+B_{target_r} &= M_{31}R_{actual_r} + M_{32}G_{actual_r} + M_{33}B_{actual_r},\\
+R_{target_g} &= M_{11}R_{actual_g} + M_{12}G_{actual_g} + M_{13}B_{actual_g},\\
+G_{target_g} &= M_{21}R_{actual_g} + M_{22}G_{actual_g} + M_{23}B_{actual_g},\\
+B_{target_g} &= M_{31}R_{actual_g} + M_{32}G_{actual_g} + M_{33}B_{actual_g},\\
+R_{target_b} &= M_{11}R_{actual_b} + M_{12}G_{actual_b} + M_{13}B_{actual_b},\\
+G_{target_b} &= M_{21}R_{actual_b} + M_{22}G_{actual_b} + M_{23}B_{actual_b},\\
+B_{target_b} &= M_{31}R_{actual_b} + M_{32}G_{actual_b} + M_{33}B_{actual_b}
+\end{align}$$
+
+... [To be solved] ...
+
+Now when you have the white point compensation factors, $C_{sr}, C_{sg}, C_{sb}$, and your matrix $M$ for these particular LEDs, add these constants to your program and transform every RGB LED like the following:
+
+$$
+\begin{bmatrix} R_{output} \\ G_{output} \\ B_{output} \end{bmatrix} =
+[M]
+\begin{bmatrix} C_{sr} R_{input} \\ C_{sg} G_{input} \\ C_{sb} B_{input} \end{bmatrix}
+$$
+
+Where $\{R_{input}, G_{input}, B_{input}\}$ is the RGB color you *want* to display, and the computed $\{R_{output}, G_{output}, B_{output}\}$ is the RGB code you actually set your LEDs to.
 
 Sources:
 https://www.led-professional.com/resources-1/articles/avoiding-brightness-and-color-mismatch-with-proper-rgb-gamut-calibration
