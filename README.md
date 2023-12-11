@@ -163,7 +163,7 @@ Then program the LEDs to output the RGB code that I *want* to match my target co
 
 Now measure the spectrum that the LEDs output with the spectrometer and obtain a relative [SPD](#spectral-power-distribution).
 
-Compute the CIE XYZ values for the spectrum and then from that the CIE xyY coordinates and from that the RGB values. The Y here will be nonsensical since we only have a relative SPD. So the same holds for RGB, the absolute values for each color channel has no value, only their relationship to each other. But we only care about the chromaticity anyway, so this is fine! We call these $R_{actual}, G_{actual}, B_{actual}$.
+Compute the CIE XYZ values for the spectrum and then from that the CIE xyY coordinates and from that the RGB values. The Y here will be nonsensical since we only have a relative SPD. So the same holds for RGB, the absolute values for each color channel has no value, only their relationship to each other. But we only care about the chromaticity anyway, so this is fine! We call these $R_{actual}, G_{actual}, B_{actual}$. *[Open question I don't have the answer to yet: Can I just skip the CIE XYZ -> CIE xyY steps. There are color matching functions for RGB that goes directly from SPD -> RGB. Are these equally good?]*
 
 Compute compensation factors ($C_{r/g/b}$) for each color channel to make their actual output equally strong. The compensation factors above are the factors you would need to multiply your desired RGB values with before sending them to the LEDs in order to have them output something close to the chromaticity of the RGB value you expected:
 
